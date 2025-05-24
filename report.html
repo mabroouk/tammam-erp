@@ -1,0 +1,87 @@
+
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="fw-bold mb-4">تقرير الإيرادات والمصروفات</h2>
+    <form method="POST" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <label class="form-label">من تاريخ</label>
+            <input type="date" name="start_date" class="form-control" required>
+        </div>
+        <div class="col-md-5">
+            <label class="form-label">إلى تاريخ</label>
+            <input type="date" name="end_date" class="form-control" required>
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> عرض</button>
+        </div>
+    </form>
+
+    {% if receipts or payments or invoices %}
+    <form method="POST" action="/report/print">
+        <input type="hidden" name="start_date" value="{{ start_date }}">
+        <input type="hidden" name="end_date" value="{{ end_date }}">
+        <button type="submit" class="btn btn-outline-dark mb-4"><i class="fas fa-print"></i> طباعة PDF</button>
+    </form>
+
+    <div class="mb-4">
+        <h5>ملخص:</h5>
+        <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between">
+                <span>إجمالي سندات القبض:</span> <strong>{{ total_receipts }} درهم</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span>إجمالي سندات الصرف:</span> <strong>{{ total_payments }} درهم</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span>إجمالي الفواتير:</span> <strong>{{ total_invoices }} درهم</strong>
+            </li>
+        </ul>
+    </div>
+
+    <h5 class="mt-4">تفاصيل الحركات:</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-secondary">
+                <tr>
+                    <th>النوع</th>
+                    <th>التاريخ</th>
+                    <th>الطرف</th>
+                    <th>الوصف</th>
+                    <th>المبلغ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in receipts %}
+                <tr class="{{ 'table-danger' if r.canceled else '' }}">
+                    <td>سند قبض</td>
+                    <td>{{ r.date }}</td>
+                    <td>{{ r.client_name }}</td>
+                    <td>{{ r.notes }}</td>
+                    <td>{{ r.amount }}</td>
+                </tr>
+                {% endfor %}
+                {% for p in payments %}
+                <tr>
+                    <td>سند صرف</td>
+                    <td>{{ p.date }}</td>
+                    <td>{{ p.payee_name }}</td>
+                    <td>{{ p.notes }}</td>
+                    <td>{{ p.amount }}</td>
+                </tr>
+                {% endfor %}
+                {% for i in invoices %}
+                <tr>
+                    <td>فاتورة</td>
+                    <td>{{ i.date }}</td>
+                    <td>{{ i.party_name }}</td>
+                    <td>{{ i.item_description }}</td>
+                    <td>{{ i.grand_total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
